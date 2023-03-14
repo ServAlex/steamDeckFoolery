@@ -5,6 +5,14 @@ import asyncio
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 print(joysticks)
+print(joysticks.__len__())
+if(joysticks.__len__() > 0):
+	for i in range(joysticks.__len__()):
+		axixCount = joysticks[i].get_numaxes()
+		print(axixCount)
+		for j in range(axixCount):
+			print(joysticks[i].get_axis(j))
+
 print("main part")
 
 pygame.init()
@@ -14,6 +22,8 @@ clock = pygame.time.Clock()
 rect = pygame.Rect(0, 0, 20, 20)
 rect.center = window.get_rect().center
 vel = 5
+
+radius = 100
 
 ip = "http://192.168.100.186/"
 
@@ -77,9 +87,21 @@ while run:
 	keys = pygame.key.get_pressed()
 
 	sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]])
+
+	if(joysticks.__len__() > 0):
+		for i in range(joysticks.__len__()):
+			axixCount = joysticks[i].get_numaxes()
+			print(axixCount)
+			for j in range(axixCount):
+				print(joysticks[i].get_axis(j))
 	
+	"""
 	rect.x += (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * vel
 	rect.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * vel
+	"""
+
+	rect.centerx = window.get_width()/2 + (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * radius
+	rect.centery = window.get_height()/2 + (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * radius
 		
 	rect.centerx = rect.centerx % window.get_width()
 	rect.centery = rect.centery % window.get_height()

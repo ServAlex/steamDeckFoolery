@@ -15,10 +15,13 @@ window = pygame.display.set_mode((1280, 800))
 pygame.display.set_caption("rc controller")
 
 
-rect = pygame.Rect(0, 0, 20, 20)
-rect.center = window.get_rect().center
-vel = 5
+left_joystick_rect = pygame.Rect(0, 0, 20, 20)
+right_joystick_rect = pygame.Rect(0, 0, 20, 20)
+left_trigger_rect = pygame.Rect(0, 0, 20, 20)
+right_trigger_rect = pygame.Rect(0, 0, 20, 20)
+kb_rect = pygame.Rect(0, 0, 20, 20)
 radius = 100
+joystick_offset = radius * 1.5
 
 white = (255,255,255)
 text_bg = (10,10,10)
@@ -41,10 +44,16 @@ def draw_joystick_stats():
 		r.topleft = (10, 30 + 30*i)
 		window.blit(joystick_surfaces[i], joystick_rects[i])
 
+def get_joystick_stats():
+	if(joysticks_count < 1):
+		return [0, 0, 0, 0, 0, 0]
+	return [int(joysticks[0].get_axis(i)*100) for i in range(joysticks[0].get_numaxes())]
+	
+
 ip = "http://192.168.100.186/"
 
 
-currentButtonStates = [False, False, False, False]
+current_button_states = [False, False, False, False]
 
 
 async def aioRequest(command):
@@ -62,14 +71,14 @@ def sendCommand(command):
 	asyncio.run(aioRequest(command))
 
 
-def sendSomeCommand(buttonStates):
-	global currentButtonStates
+def sendSomeCommand(button_states, joystick_states):
+	global current_button_states
 
-	if(buttonStates == currentButtonStates):
+	if(button_states == current_button_states):
 		return
 
-	currentButtonStates = buttonStates
-	match buttonStates:
+	current_button_states = button_states
+	match button_states:
 		case [True, False, False, False]: 
 			sendCommand("forward")
 		case [True, True, False, False]: 
@@ -101,18 +110,34 @@ while run:
 			print(pygame.key.name(event.key))
 
 	keys = pygame.key.get_pressed()
+	joystick_stats = get_joystick_stats()
 
-	sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]])
+	sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]], joystick_stats)
 
+	kb_rect.centerx = window.get_width()/2 + (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * radius
+	kb_rect.centery = window.get_height()/2 + (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * radius
 
-	rect.centerx = window.get_width()/2 + (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * radius
-	rect.centery = window.get_height()/2 + (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * radius
+	left_joystick_rect.centerx = window.get_width()/2 - joystick_offset*2 + joystick_stats[0]
+	left_joystick_rect.centery = window.get_height()/2 + joystick_stats[1]
+
+	right_joystick_rect.centerx = window.get_width()/2 + joystick_offset*2 + joystick_stats[3]
+	right_joystick_rect.centery = window.get_height()/2 + joystick_stats[4]
+
+	left_trigger_rect.centerx = window.get_width()/2 - joystick_offset*3
+	left_trigger_rect.centery = window.get_height()/2 - joystick_stats[2]
+
+	right_trigger_rect.centerx = window.get_width()/2 + joystick_offset*3
+	right_trigger_rect.centery = window.get_height()/2 - joystick_stats[5]
 		
 	#rect.centerx = rect.centerx % window.get_width()
 	#rect.centery = rect.centery % window.get_height()
 
 	window.fill(0)
-	pygame.draw.rect(window, (255, 0, 0), rect)
+	pygame.draw.rect(window, (0, 0, 255), kb_rect)
+	pygame.draw.rect(window, (0, 255, 0), right_joystick_rect)
+	pygame.draw.rect(window, (0, 255, 0), left_joystick_rect)
+	pygame.draw.rect(window, (255, 0, 0), left_trigger_rect)
+	pygame.draw.rect(window, (255, 0, 0), right_trigger_rect)
 	window.blit(jcount_surface, jcount_rect)
 	draw_joystick_stats()
 	pygame.display.flip()

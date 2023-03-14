@@ -22,11 +22,14 @@ ip = "http://192.168.100.186/"
 currentButtonStates = [False, False, False, False]
 
 async def aioRequest(command):
-	async with aiohttp.ClientSession() as session:
-		async with session.get(ip + command) as resp:
-			pass
-			#print(resp.status)
-			#print(await resp.text())
+	async with aiohttp.ClientSession(timeout=1) as session:
+		try:
+			async with session.get(ip + command):
+				pass
+				#print(resp.status)
+				#print(await resp.text())
+		except Exception as e:
+			print('Connection Error', str(e))
 
 def sendCommand(command):
 	print(command)

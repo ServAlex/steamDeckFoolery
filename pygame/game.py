@@ -30,7 +30,7 @@ jcount_rect = jcount_surface.get_rect()
 jcount_rect.topleft = (10, 10)
 
 def joystick_sammary(joystick):
-	stats = ["\n\t"+str(int(joystick.get_axis(i)*100)) for i in range(joystick.get_numaxes())]
+	stats = [str(int(joystick.get_axis(i)*100)) for i in range(joystick.get_numaxes())]
 	return ("(" + ", ".join(stats) + ")")
 
 def draw_joystick_stats():
@@ -104,15 +104,6 @@ while run:
 
 	sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]])
 
-	"""
-	if(joysticks.__len__() > 0):
-		for i in range(joysticks.__len__()):
-			axixCount = joysticks[i].get_numaxes()
-			print("axes "+ str(axixCount))
-			for j in range(axixCount):
-				print(joysticks[i].get_axis(j))
-	"""
-	
 
 	rect.centerx = window.get_width()/2 + (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * radius
 	rect.centery = window.get_height()/2 + (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * radius

@@ -4,32 +4,48 @@ import asyncio
 
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
-print(joysticks)
-print("joysticks count " + str(joysticks.__len__()))
-if(joysticks.__len__() > 0):
-	for i in range(joysticks.__len__()):
-		axixCount = joysticks[i].get_numaxes()
-		print("axes "+ str(axixCount))
-		for j in range(axixCount):
-			print(joysticks[i].get_axis(j))
+joysticks_count = joysticks.__len__()
 
 print("main part")
 
 pygame.init()
-window = pygame.display.set_mode((1280, 800))
 clock = pygame.time.Clock()
+
+window = pygame.display.set_mode((1280, 800))
+pygame.display.set_caption("rc controller")
+
 
 rect = pygame.Rect(0, 0, 20, 20)
 rect.center = window.get_rect().center
 vel = 5
-
 radius = 100
+
+white = (255,255,255)
+text_bg = (10,10,10)
+
+font = pygame.font.Font('freesansbold.ttf', 16)
+
+jcount_surface = font.render('joysticks count ' + str(joysticks_count), True, white, text_bg)
+jcount_rect = jcount_surface.get_rect()
+jcount_rect.topleft = (10, 10)
+
+def joystick_sammary(joystick):
+	stats = ["\n\t"+str(int(joystick.get_axis(i)*100)) for i in range(joystick.get_numaxes())]
+	return ("(" + ", ".join(stats) + ")")
+
+def draw_joystick_stats():
+	joystick_surfaces = [font.render("joystick " + str(i) + ' ' + joystick_sammary(joysticks[i]), True, white, text_bg) for i in range(joysticks_count)]
+	joystick_rects = [s.get_rect() for s in joystick_surfaces]
+	print(joystick_rects)
+	for i, r in enumerate(joystick_rects):
+		r.topleft = (10, 30 + 30*i)
+		window.blit(joystick_surfaces[i], joystick_rects[i])
 
 ip = "http://192.168.100.186/"
 
 
-
 currentButtonStates = [False, False, False, False]
+
 
 async def aioRequest(command):
 	async with aiohttp.ClientSession(timeout=1) as session:
@@ -88,26 +104,26 @@ while run:
 
 	sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]])
 
+	"""
 	if(joysticks.__len__() > 0):
 		for i in range(joysticks.__len__()):
 			axixCount = joysticks[i].get_numaxes()
 			print("axes "+ str(axixCount))
 			for j in range(axixCount):
 				print(joysticks[i].get_axis(j))
+	"""
 	
-	"""
-	rect.x += (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * vel
-	rect.y += (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * vel
-	"""
 
 	rect.centerx = window.get_width()/2 + (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * radius
 	rect.centery = window.get_height()/2 + (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * radius
 		
-	rect.centerx = rect.centerx % window.get_width()
-	rect.centery = rect.centery % window.get_height()
+	#rect.centerx = rect.centerx % window.get_width()
+	#rect.centery = rect.centery % window.get_height()
 
 	window.fill(0)
 	pygame.draw.rect(window, (255, 0, 0), rect)
+	window.blit(jcount_surface, jcount_rect)
+	draw_joystick_stats()
 	pygame.display.flip()
 
 pygame.quit()

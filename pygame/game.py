@@ -5,11 +5,11 @@ import asyncio
 pygame.joystick.init()
 joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
 print(joysticks)
-print("joysticks count " + joysticks.__len__())
+print("joysticks count " + str(joysticks.__len__()))
 if(joysticks.__len__() > 0):
 	for i in range(joysticks.__len__()):
 		axixCount = joysticks[i].get_numaxes()
-		print("axes "+ axixCount)
+		print("axes "+ str(axixCount))
 		for j in range(axixCount):
 			print(joysticks[i].get_axis(j))
 
@@ -91,7 +91,7 @@ while run:
 	if(joysticks.__len__() > 0):
 		for i in range(joysticks.__len__()):
 			axixCount = joysticks[i].get_numaxes()
-			print(axixCount)
+			print("axes "+ str(axixCount))
 			for j in range(axixCount):
 				print(joysticks[i].get_axis(j))
 	

@@ -30,6 +30,9 @@ class Program
 
 		float xOffset = 0;
 		float yOffset = 0;
+
+		float joystickXOffset = 0;
+		float joystickYOffset = 0;
 		Dictionary<SDL.SDL_Keycode, bool> buttonsStates = new Dictionary<SDL.SDL_Keycode, bool>();
 
 		while (!quit)

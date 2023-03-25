@@ -6,17 +6,10 @@ current_button_states = [False, False, False, False]
 
 ip = "ws://192.168.100.186/ws"
 
-def run_once(loop):
-    loop.call_soon(loop.stop)
-    loop.run_forever()
-
 async def main(loop):
 
 	async with aiohttp.ClientSession() as session:
 		async with session.ws_connect(url = ip) as ws:
-
-
-			#ws = await session.ws_connect(url=ip)
 
 			pygame.joystick.init()
 			joysticks = [pygame.joystick.Joystick(i) for i in range(pygame.joystick.get_count())]
@@ -76,7 +69,6 @@ async def main(loop):
 
 				print("sending ws data")
 				#ws.send(bytearray(array))
-				#await ws.send_bytes(bytearray(array))
 
 				await ws.send_bytes(bytearray(array))
 				'''
@@ -176,20 +168,11 @@ async def main(loop):
 				draw_joystick_stats()
 				pygame.display.flip()
 
-				#tasks_count = len(asyncio.all_tasks(loop))
-				#print(tasks_count)
-
-				#if(tasks_count):
-				#	run_once(loop)
-
 				await asyncio.sleep(0)
-
-				#run_once(loop)
 
 			pygame.quit()
 			exit()
 
 
-#asyncio.run(main())
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main(loop))

@@ -3,6 +3,8 @@ import aiohttp
 import asyncio
 
 current_button_states = [False, False, False, False]
+lastUpdated = 0
+
 
 ip = "ws://192.168.100.186/ws"
 
@@ -59,10 +61,7 @@ async def main(loop):
 				return [int(joysticks[0].get_axis(i)*100) for i in range(joysticks[0].get_numaxes())]
 				
 
-
-			def sendCommand(command):
-				print(command)
-				#asyncio.run(aioRequest(command))
+			lastArray = []
 
 			async def sendWsData(kb, joystick_states):
 				array = [kb] + joystick_states
@@ -83,48 +82,60 @@ async def main(loop):
 
 				print("ws data sent")
 
-			await sendWsData(6, [9,1,2,3,4,5,6])
-			await sendWsData(6, [8,1,2,3,4,5,6])
-			await sendWsData(6, [7,1,2,3,4,5,6])
-
-			async def sendSomeCommand(button_states, joystick_states):
+			async def sendSomeCommand(button_states, joystick_states, time):
 				global current_button_states
+				global lastUpdated
 
-				if(button_states == current_button_states):
-					return
+				#if(button_states == current_button_states):
+				#	return
 
 				current_button_states = button_states
+
+				bytes_to_send = bytearray(button_states)
+
+				for state in joystick_states:
+					bytes_to_send.append(state + 128)
+
+				print(bytes_to_send, time)
+
+				if(time - lastUpdated > 20):
+					await ws.send_bytes(bytes_to_send)
+					lastUpdated = time
+				#await ws.send_bytes(bytearray(array))
+
+				'''
 				match button_states:
 					case [True, False, False, False]: 
-						sendCommand("forward")
+						#sendCommand("forward")
 						await sendWsData(1, joystick_states)
 					case [True, True, False, False]: 
-						sendCommand("right")
+						#sendCommand("right")
 						await sendWsData(2, joystick_states)
 					case [True, False, False, True]: 
-						sendCommand("left")
+						#sendCommand("left")
 						await sendWsData(8, joystick_states)
 					case [False, True, False, False]: 
-						sendCommand("rotateRight")
+						#sendCommand("rotateRight")
 						await sendWsData(3, joystick_states)
 					case [False, False, False, True]: 
-						sendCommand("rotateLeft")
+						#sendCommand("rotateLeft")
 						await sendWsData(7, joystick_states)
 					case [False, False, False, False]: 
-						sendCommand("stop")
+						#sendCommand("stop")
 						await sendWsData(0, joystick_states)
 					case [False, False, True, False]: 
-						sendCommand("reverse")
+						#sendCommand("reverse")
 						await sendWsData(5, joystick_states)
 					case [False, True, True, False]: 
-						sendCommand("reverseRight")
+						#sendCommand("reverseRight")
 						await sendWsData(4, joystick_states)
 					case [False, False, True, True]: 
-						sendCommand("reverseLeft")
+						#sendCommand("reverseLeft")
 						await sendWsData(6, joystick_states)
 					case [_,_,_,_]:
-						sendCommand("stop")
+						#sendCommand("stop")
 						await sendWsData(0, joystick_states)
+				'''
 
 			run = True
 			while run:
@@ -136,9 +147,13 @@ async def main(loop):
 						print(pygame.key.name(event.key))
 
 				keys = pygame.key.get_pressed()
+
+				if(keys[pygame.K_q]):
+					run = False
+
 				joystick_stats = get_joystick_stats()
 
-				await sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]], joystick_stats)
+				await sendSomeCommand([keys[pygame.K_UP], keys[pygame.K_RIGHT], keys[pygame.K_DOWN], keys[pygame.K_LEFT]], joystick_stats, pygame.time.get_ticks())
 
 				kb_rect.centerx = window.get_width()/2 + (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT]) * radius
 				kb_rect.centery = window.get_height()/2 + (keys[pygame.K_DOWN] - keys[pygame.K_UP]) * radius

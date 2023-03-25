@@ -6,9 +6,15 @@ current_button_states = [False, False, False, False]
 
 ip = "ws://192.168.100.186/ws"
 
-async def main():
+def run_once(loop):
+    loop.call_soon(loop.stop)
+    loop.run_forever()
+
+async def main(loop):
+
 	async with aiohttp.ClientSession() as session:
 		async with session.ws_connect(url = ip) as ws:
+
 
 			#ws = await session.ws_connect(url=ip)
 
@@ -72,6 +78,8 @@ async def main():
 				#ws.send(bytearray(array))
 				#await ws.send_bytes(bytearray(array))
 
+				await ws.send_bytes(bytearray(array))
+				'''
 				async for msg in ws:
 					if msg.type == aiohttp.WSMsgType.TEXT:
 						if msg.data == 'close cmd':
@@ -79,6 +87,7 @@ async def main():
 							break
 						else:
 							await ws.send_str(msg.data + '/answer')
+				'''
 
 				print("ws data sent")
 
@@ -167,10 +176,20 @@ async def main():
 				draw_joystick_stats()
 				pygame.display.flip()
 
+				#tasks_count = len(asyncio.all_tasks(loop))
+				#print(tasks_count)
+
+				#if(tasks_count):
+				#	run_once(loop)
+
+				await asyncio.sleep(0)
+
+				#run_once(loop)
+
 			pygame.quit()
 			exit()
 
 
 #asyncio.run(main())
 loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+loop.run_until_complete(main(loop))
